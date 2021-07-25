@@ -1,0 +1,6 @@
+jar {
+    archiveBaseName = 'vhrservice-api'
+}
+
+dependencies {
+}

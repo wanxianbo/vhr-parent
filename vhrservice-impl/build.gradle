@@ -1,0 +1,7 @@
+jar {
+    archiveBaseName = 'vhservice-impl'
+}
+
+dependencies {
+
+}

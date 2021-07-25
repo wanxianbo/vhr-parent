@@ -1,0 +1,6 @@
+jar {
+    archiveBaseName = 'base-api'
+}
+
+dependencies {
+}

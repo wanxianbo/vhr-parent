@@ -1,0 +1,6 @@
+rootProject.name = 'vhr-parent'
+include 'vhrservice-impl'
+include 'vhservice-api'
+include 'vhrservice-api'
+include 'base-api'
+

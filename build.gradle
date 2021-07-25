@@ -1,0 +1,135 @@
+buildscript {
+    ext {
+        springBootVersion = '2.2.13.RELEASE'
+    }
+    repositories {
+        maven {
+            url 'https://maven.aliyun.com/repository/public/'
+        }
+        mavenLocal()
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.2.13.RELEASE")
+    }
+}
+
+plugins {
+    id 'org.springframework.boot' version "2.2.13.RELEASE" apply false
+}
+
+ext {
+    druidVersion = "1.1.10"
+    mysqlVersion = "8.0.21"
+    mybatisPlusVersion = "3.1.0"
+}
+
+configurations {
+    providedRuntime
+}
+
+configurations {
+    compile.exclude module: 'lettuce-core'
+    all*.exclude 'group': 'io.lettuce', module: 'lettuce-core'
+}
+
+def javaLibrariesSuffix = [
+        '-base',
+        '-api',
+        '-util'
+]
+
+subprojects { sub ->
+
+    apply plugin: 'java'
+    apply plugin: 'idea'
+    apply plugin: 'maven-publish'
+    apply plugin: 'io.spring.dependency-management'
+    apply plugin: 'org.springframework.boot'
+
+    if (javaLibrariesSuffix.any {
+        sub.project.name.endsWith(it)
+    }) {
+        apply plugin: 'java-library'
+    }
+
+    group 'org.wanxianbo'
+    version '1.0-SNAPSHOT'
+
+    sourceCompatibility = 1.8
+    [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+    repositories {
+        maven {
+            url 'https://maven.aliyun.com/repository/public/'
+        }
+        maven { url "https://repo.spring.io/milestone" }
+        maven { url "http://maven.aliyun.com/nexus/content/groups/public" }
+        maven { url "http://maven.aliyun.com/nexus/contnet/repositories/jcenter" }
+        mavenLocal()
+        mavenCentral()
+    }
+
+    jar {
+        enabled = true
+    }
+
+
+    sourceSets {
+        main {
+            java { srcDir "src/main/java" }
+            resources {
+                srcDir 'src/main/resources'
+                exclude 'logback.xml'
+            }
+        }
+        test {
+            java { srcDir 'src/test/java' }
+            resources { srcDir 'src/test/resources' }
+        }
+    }
+
+    //添加依赖
+    dependencies {
+
+        //spring boot framework
+        compile('org.springframework.boot:spring-boot-starter-web')
+        compile 'org.springframework.boot:spring-boot-starter-aop'
+//        compile 'org.springframework.boot:spring-boot-devtools'
+        compile('org.springframework.boot:spring-boot-starter-data-redis')
+        compile group: 'io.lettuce', name: 'lettuce-core', version: '5.3.6.RELEASE'
+        //for data redis lettuce pool
+        compile 'org.apache.commons:commons-pool2:2.10.0'
+
+        compile 'de.siegmar:logback-gelf:3.0.0'
+        compile group: 'org.codehaus.janino', name: 'janino', version: '3.0.16'
+
+        //third party util
+        compile "com.google.guava:guava:30.1-jre"
+        compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
+        compile group: 'org.apache.commons', name: 'commons-collections4', version: '4.3'
+        compile group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.3'
+
+        compileOnly 'org.projectlombok:lombok'
+        annotationProcessor 'org.projectlombok:lombok'
+        testAnnotationProcessor 'org.projectlombok:lombok'
+        testCompileOnly 'org.projectlombok:lombok'
+        testCompile 'org.springframework.boot:spring-boot-starter-test'
+        testCompile group: 'junit', name: 'junit', version: '4.12'
+
+    }
+}
+
+configure(subprojects.findAll { it.name.endsWith("-impl") }) {
+
+    dependencies {
+        implementation 'org.springframework.boot:spring-boot-starter-actuator'
+        implementation group: 'org.glassfish.jersey.core', name: 'jersey-client', version: '2.27'
+        implementation('com.thoughtworks.xstream:xstream:1.4.11.1')
+        implementation group: 'org.springframework.boot', name: 'spring-boot-starter-jdbc'
+        implementation group: 'com.alibaba', name: 'druid-spring-boot-starter', version: "$druidVersion"
+        implementation group: 'com.baomidou', name: 'mybatis-plus-boot-starter', version: "$mybatisPlusVersion"
+        runtime("mysql:mysql-connector-java:$mysqlVersion")
+    }
+}
+
